@@ -47,7 +47,7 @@ buffer_destroy(Buffer buffer)
     }
 }
 
-Chunk
+Chunk*
 chunk_create(int size_x, int size_y,
     int left_rstripe, int left_wstripe, int right_rstripe, int right_wstripe)
 {
@@ -55,75 +55,76 @@ chunk_create(int size_x, int size_y,
         fprintf(stderr, "chunk_create(%d): invalid parameter\n", size_x);
         exit(1);
     }
-    Chunk chunk;
-    chunk.size_x = size_x;
-    chunk.size_y = size_y;
-    chunk.rbuffer = buffer_create(size_x, size_y, left_rstripe, right_rstripe);
-    chunk.wbuffer = buffer_create(size_x, size_y, left_wstripe, right_wstripe);
+    Chunk *chunk = malloc(sizeof(Chunk));
+    chunk->size_x = size_x;
+    chunk->size_y = size_y;
+    chunk->rbuffer = buffer_create(size_x, size_y, left_rstripe, right_rstripe);
+    chunk->wbuffer = buffer_create(size_x, size_y, left_wstripe, right_wstripe);
     return chunk;
 }
 
 void
-chunk_destroy(Chunk chunk)
+chunk_destroy(Chunk *chunk)
 {
-    buffer_destroy(chunk.rbuffer);
-    buffer_destroy(chunk.wbuffer);
+    buffer_destroy(chunk->rbuffer);
+    buffer_destroy(chunk->wbuffer);
+    free(chunk);
 }
 
 char
-chunk_get(Chunk chunk, int x, int y)
+chunk_get(Chunk *chunk, int x, int y)
 {
-    if ((x < -1) || (x > chunk.size_x) || (y < 0) || (y > chunk.size_y - 1)) {
+    if ((x < -1) || (x > chunk->size_x) || (y < 0) || (y > chunk->size_y - 1)) {
         fprintf(stderr, "chunk_get(%d, %d): invalid parameter\n", x, y);
         exit(1);
     }
     if (x == -1) {
-        if (chunk.rbuffer.left_stripe) {
-            return chunk.rbuffer.left_stripe[y];
+        if (chunk->rbuffer.left_stripe) {
+            return chunk->rbuffer.left_stripe[y];
         }
         else {
             return 0;
         }
     }
     if (x == 0) {
-        if (chunk.rbuffer.left_stripe) {
-            return chunk.rbuffer.left_stripe[chunk.size_y + y];
+        if (chunk->rbuffer.left_stripe) {
+            return chunk->rbuffer.left_stripe[chunk->size_y + y];
         }
     }
-    if (x == chunk.size_x) {
-        if (chunk.rbuffer.right_stripe) {
-            return chunk.rbuffer.right_stripe[chunk.size_y + y];
+    if (x == chunk->size_x) {
+        if (chunk->rbuffer.right_stripe) {
+            return chunk->rbuffer.right_stripe[chunk->size_y + y];
         }
         else {
             return 0;
         }
     }
-    if (x == chunk.size_x - 1) {
-        if (chunk.rbuffer.right_stripe) {
-            return chunk.rbuffer.right_stripe[y];
+    if (x == chunk->size_x - 1) {
+        if (chunk->rbuffer.right_stripe) {
+            return chunk->rbuffer.right_stripe[y];
         }
     }
-    return chunk.rbuffer.payload[x][y];
+    return chunk->rbuffer.payload[x][y];
 }
 
 void
-chunk_set(Chunk chunk, int x, int y, char value)
+chunk_set(Chunk *chunk, int x, int y, char value)
 {
-    if ((x < 0) || (x > chunk.size_x - 1) || (y < 0) || (y > chunk.size_y - 1)) {
+    if ((x < 0) || (x > chunk->size_x - 1) || (y < 0) || (y > chunk->size_y - 1)) {
         fprintf(stderr, "chunk_set(%d, %d): invalid parameter\n", x, y);
         exit(1);
     }
     if (x == 0) {
-        if (chunk.wbuffer.left_stripe) {
-            chunk.wbuffer.left_stripe[chunk.size_y + y] = value;
+        if (chunk->wbuffer.left_stripe) {
+            chunk->wbuffer.left_stripe[chunk->size_y + y] = value;
         }
     }
-    if (x == chunk.size_x - 1) {
-        if (chunk.wbuffer.right_stripe) {
-            chunk.wbuffer.right_stripe[y] = value;
+    if (x == chunk->size_x - 1) {
+        if (chunk->wbuffer.right_stripe) {
+            chunk->wbuffer.right_stripe[y] = value;
         }
     }
-    chunk.wbuffer.payload[x][y] = value;
+    chunk->wbuffer.payload[x][y] = value;
 }
 
 void

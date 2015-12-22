@@ -11,22 +11,22 @@ void
 test_chunk_1(void)
 {
     printf("TEST_CHUNK_1\n");
-    Chunk chunk1 = chunk_create(10, 10, 0, 0, 0, 0);
-    Chunk chunk2 = chunk_create(10, 10, 0, 0, 0, 0);
+    Chunk *chunk1 = chunk_create(10, 10, 0, 0, 0, 0);
+    Chunk *chunk2 = chunk_create(10, 10, 0, 0, 0, 0);
 
     for (int y = 0; y < 10; y++) {
         for (int x = 0; x < 10; x++) {
             chunk_set(chunk1, x, y, x * y);
         }
     }
-    chunk_flip(&chunk1);
+    chunk_flip(chunk1);
 
     for (int y = 0; y < 10; y++) {
         for (int x = 0; x < 10; x++) {
             chunk_set(chunk2, x, y, -x * y);
         }
     }
-    chunk_flip(&chunk2);
+    chunk_flip(chunk2);
 
     printf("chunk1:\n");
     for (int y = 0; y < 10; y++) {
@@ -57,18 +57,18 @@ test_chunk_2(void)
     int stripe21 = shmget(ftok("life.token", 21), 10 * 2, IPC_CREAT | 0666);
     int stripe22 = shmget(ftok("life.token", 22), 10 * 2, IPC_CREAT | 0666);
 
-    Chunk chunk1 = chunk_create(10, 10, 0, 0, stripe11, stripe12);
-    Chunk chunk2 = chunk_create(10, 10, stripe11, stripe12, stripe21, stripe22);
-    Chunk chunk3 = chunk_create(10, 10, stripe21, stripe22, 0, 0);
+    Chunk *chunk1 = chunk_create(10, 10, 0, 0, stripe11, stripe12);
+    Chunk *chunk2 = chunk_create(10, 10, stripe11, stripe12, stripe21, stripe22);
+    Chunk *chunk3 = chunk_create(10, 10, stripe21, stripe22, 0, 0);
 
     for (int y = 0; y < 10; y++) {
         for (int x = 0; x < 10; x++) {
             chunk_set(chunk2, x, y, x + y);
         }
     }
-    chunk_flip(&chunk1);
-    chunk_flip(&chunk2);
-    chunk_flip(&chunk3);
+    chunk_flip(chunk1);
+    chunk_flip(chunk2);
+    chunk_flip(chunk3);
 
     printf("chunk1:\n");
     for (int y = 0; y < 10; y++) {
